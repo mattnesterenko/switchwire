@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { CommonUtils } from '@/util';
 
 import Component from '../Component';
 
@@ -18,7 +18,7 @@ export default class ComponentManager {
      * @return {Object}
      */
     getComponent(nameOrAlias) {
-        return _.get(this.registry, nameOrAlias);
+        return CommonUtils.get(this.registry, nameOrAlias);
     }
 
     /**
@@ -28,7 +28,7 @@ export default class ComponentManager {
      * @return {Boolean}
      */
     hasComponent(nameOrAlias) {
-        return !_.isNil(this.getComponent(nameOrAlias));
+        return !CommonUtils.isNil(this.getComponent(nameOrAlias));
     }
 
     /**
@@ -53,7 +53,7 @@ export default class ComponentManager {
      * @param {Function} callback
      */
     each(callback) {
-        _.each(this.components, callback);
+        CommonUtils.each(this.components, callback);
     }
 
     /**
@@ -72,12 +72,12 @@ export default class ComponentManager {
         var { name, alias } = cmp;
 
         this.components.push(cmp);
-        _.set(this.registry, name, cmp);
+        CommonUtils.set(this.registry, name, cmp);
 
         // register this component by each aliased name too
-        if (!_.isEmpty(alias)) {
-            _.each(_.castArray(alias), a => {
-                _.set(this.registry, a, cmp);
+        if (!CommonUtils.isEmpty(alias)) {
+            CommonUtils.each(CommonUtils.castArray(alias), a => {
+                CommonUtils.set(this.registry, a, cmp);
             });
         }
 

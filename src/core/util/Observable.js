@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { CommonUtils } from '@/util';
 
 /**
  * Decorator mixin used for event handling
@@ -15,7 +15,7 @@ export default class Observable {
     static mixin(instance) {
         var o = new Observable();
 
-        if (_.isFunction(instance.destroy)) {
+        if (CommonUtils.isFunction(instance.destroy)) {
             // intercept the destroy method...
             instance.destroy = (...args) => (o.destroy.apply(instance), instance.destroy(args));
         } else {
@@ -23,7 +23,7 @@ export default class Observable {
         }
 
         // mixin the functionality now
-        _.extend(instance, {
+        CommonUtils.extend(instance, {
             events: {},
 
             fireEvent: o.fireEvent,
@@ -102,7 +102,7 @@ export default class Observable {
                 this.events[eventName] = null;
             }
         } else {
-            _.each(this.events, event => event.destroy());
+            CommonUtils.each(this.events, event => event.destroy());
             this.events = {};
         }
     }
@@ -122,7 +122,7 @@ export default class Observable {
  */
 class Event {
     constructor() {
-        _.extend(this, {
+        CommonUtils.extend(this, {
             listeners: []
         });
     }
@@ -143,7 +143,7 @@ class Event {
         me.listeners.push(listener);
 
         return function() {
-            _.pull(me.listeners, listener);
+            CommonUtils.pull(me.listeners, listener);
         };
     }
 
@@ -155,9 +155,9 @@ class Event {
      * @param {Object} options Options to inclue for the event
      */
     removeListener(eventHandler, thisArg, options) {
-        var matches = _.filter(this.listeners, { eventHandler, thisArg, options });
+        var matches = CommonUtils.filter(this.listeners, { eventHandler, thisArg, options });
 
-        _.pullAll(this.listeners, matches);
+        CommonUtils.pullAll(this.listeners, matches);
     }
 
     /**
@@ -191,7 +191,7 @@ class Event {
     fireListener(listener, args) {
         var { eventHandler, thisArg, options } = listener;
 
-        if (_.isString(eventHandler)) {
+        if (CommonUtils.isString(eventHandler)) {
             eventHandler = thisArg[eventHandler];
         }
 

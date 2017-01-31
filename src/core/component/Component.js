@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { CommonUtils } from '@/util';
 
 /**
  * Class representing a component with various configurations. This class is here just provide
@@ -14,7 +14,7 @@ export default class Component {
      */
     constructor(cfg) {
 
-        _.extend(this, {
+        CommonUtils.assignIn(this, {
             /**
              * @cfg {String} name
              *

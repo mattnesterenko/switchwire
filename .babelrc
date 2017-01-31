@@ -1,4 +1,4 @@
 {
     "presets": ["latest", "stage-1"],
-    "plugins": ["transform-decorators-legacy", "transform-runtime"]
+    "plugins": ["transform-runtime", ["babel-root-import", { "rootPathSuffix": "src", "rootPathPrefix": "@" }]]
 }

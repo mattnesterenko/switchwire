@@ -1,7 +1,6 @@
-import _ from 'lodash';
+import { CommonUtils } from '@/util';
 
 import Component from './Component';
-import Util from '../util/Util';
 
 /**
  * Simple wrapper class for keeping a component instance associated with a compoment configuration
@@ -63,7 +62,7 @@ export default class ComponentInstance {
         var { component, instance } = this;
 
         if (component.destroyMethod) {
-            Util.callback(component.destroyMethod, instance);
+            CommonUtils.callback(component.destroyMethod, instance);
         }
 
         this.component = this.instance = null;

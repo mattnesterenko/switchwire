@@ -1,4 +1,4 @@
-import { ComponentContext } from './index';
+import { ComponentContext } from '../core';
 
 class PersonDAO {
     constructor() {

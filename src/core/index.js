@@ -2,4 +2,4 @@ export { Component, ComponentFactory } from './component';
 
 export { ComponentContext } from './context';
 
-export { Util } from './util';
+export { CommonUtils } from './util';

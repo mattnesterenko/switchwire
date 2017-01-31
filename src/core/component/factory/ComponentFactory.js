@@ -1,5 +1,4 @@
 import _ from 'lodash';
-
 import Component from '../Component';
 import ComponentInstance from '../ComponentInstance';
 
@@ -8,7 +7,7 @@ import ComponentManager from './ComponentManager';
 import SingletonScope from './SingletonScope';
 import PrototypeScope from './PrototypeScope';
 
-import Util from '../../util/Util';
+import { CommonUtils } from '@/util';
 
 const DEFAULT_FACTORY_METHOD = 'getComponent';
 
@@ -32,8 +31,8 @@ export default class ComponentFactory {
     /**
      * Constructor
      */
-    constructor(cfg, ) {
-        _.extend(this, {
+    constructor(cfg) {
+        CommonUtils.extend(this, {
 
             /**
              * @property {ComponentManager} componentManager
@@ -203,7 +202,7 @@ export default class ComponentFactory {
         this.parentFactory = null;
 
         // destroy all registered scope
-        _.each(this.scopes, s => s.destroy());
+        CommonUtils.each(this.scopes, s => s.destroy());
 
         this.scopes = null;
     }
@@ -288,14 +287,14 @@ export default class ComponentFactory {
 
         // call the init method if one was provided
         if (component.initMethod) {
-            Util.callback(component.initMethod, inst);
+            CommonUtils.callback(component.initMethod, inst);
         }
 
         // handle all post-init functionality
         inst = this.executePostInitProcessors(inst, component);
 
         // process all attributes of this component
-        _.each(component.attrs, attr => this.processComponentAttribute(component, attr));
+        CommonUtils.each(component.attrs, attr => this.processComponentAttribute(component, attr));
 
         return new ComponentInstance(inst, component);
     }
@@ -321,7 +320,7 @@ export default class ComponentFactory {
             factoryComponent = this.getComponent(factoryComponent);
         }
 
-        return Util.callback(factoryMethod, factoryComponent);
+        return CommonUtils.callback(factoryMethod, factoryComponent);
     }
 
     /**
@@ -336,7 +335,7 @@ export default class ComponentFactory {
 
         // if the type is a regular object and not a function, return
         // the object itself.
-        if (_.isObject(T) && !_.isFunction(T)) {
+        if (CommonUtils.isObject(T) && !CommonUtils.isFunction(T)) {
             return T;
         }
 
@@ -354,7 +353,7 @@ export default class ComponentFactory {
     getComponentPriority(component) {
         var { priority, attrs } = component;
 
-        if (!_.isUndefined(priority)) {
+        if (!CommonUtils.isUndefined(priority)) {
             return priority;
         }
 
@@ -370,7 +369,7 @@ export default class ComponentFactory {
      * @param {Component} component
      */
     executePreInitProcessors(inst, component) {
-        _.each(this.componentPostProcessors, p => this.getComponent(p).preInitProcessor(inst, component));
+        CommonUtils.each(this.componentPostProcessors, p => this.getComponent(p).preInitProcessor(inst, component));
     }
 
     /**
@@ -383,7 +382,7 @@ export default class ComponentFactory {
      * @return {Object} inst
      */
     executePostInitProcessors(inst, component) {
-        return _.reduce(this.componentPostProcessors, (ret, p) => (this.getComponent(p).postInitProcessor(ret, component) || ret), inst);
+        return CommonUtils.reduce(this.componentPostProcessors, (ret, p) => (this.getComponent(p).postInitProcessor(ret, component) || ret), inst);
     }
 
     /**
@@ -414,7 +413,7 @@ export default class ComponentFactory {
         var { constructorArgs } = component;
 
         // map all constructor args to whatever they map to
-        return _.map(constructorArgs, arg => this.getConstructorArg(arg, component));
+        return CommonUtils.map(constructorArgs, arg => this.getConstructorArg(arg, component));
     }
 
     /**
@@ -430,7 +429,7 @@ export default class ComponentFactory {
 
         if (ref) {
             return this.getComponent(ref);
-        } if (_.isDefined(value)) {
+        } if (CommonUtils.isDefined(value)) {
             return value;
         }
     }

@@ -1,6 +1,6 @@
 import { Component, ComponentFactory, ComponentRequirePathResolver } from '../component';
 
-import _ from 'lodash';
+import { CommonUtils } from '@/util';
 
 /**
  * Base class which combines the component factory and configuration loading
@@ -14,7 +14,7 @@ export default class ComponentContext {
 	 */
 	constructor(cfg) {
 
-		_.extend(this, cfg, {
+		CommonUtils.extend(this, cfg, {
 
 			/**
 			 * @cfg {Object} factoryCfg
@@ -119,7 +119,7 @@ export default class ComponentContext {
 	 * @return {Component} The registered component
 	 */
 	registerComponentByBase(name, base, componentConfig) {
-		var cfg = _.defaults({ name, base }, componentConfig);
+		var cfg = CommonUtils.defaults({ name, base }, componentConfig);
 
 		return this.registerComponentConfiguration(cfg);
 	}
