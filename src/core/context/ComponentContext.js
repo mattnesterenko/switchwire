@@ -1,6 +1,6 @@
-import { Component, ComponentFactory, ComponentRequirePathResolver } from '../component';
+import _ from 'lodash';
 
-import { CommonUtils } from '@/util';
+import { Component, ComponentAttributes, ComponentFactory, ComponentRequirePathResolver } from '../component';
 
 /**
  * Base class which combines the component factory and configuration loading
@@ -14,7 +14,7 @@ export default class ComponentContext {
 	 */
 	constructor(cfg) {
 
-		CommonUtils.extend(this, cfg, {
+		_.extend(this, {
 
 			/**
 			 * @cfg {Object} factoryCfg
@@ -37,16 +37,25 @@ export default class ComponentContext {
 			 *
 			 * The parent component context, if there is one
 			 */
-			parentContext: null
-		});
+			parentContext: null,
+
+			/**
+			 * @cfg {Object[]} componentConfig
+			 *
+			 * An object array of component configurations
+			 */
+			componentConfig: null
+		}, cfg);
 
 		// create a component factory now
 		this.factory = new ComponentFactory(this.factoryCfg);
 
 		this.initDefaultComponents();
 
-		//this.factory.initComponents();
+		this.initComponents();
 	}
+
+
 
 	/**
 	 * Sets a parent component context
@@ -111,7 +120,7 @@ export default class ComponentContext {
 	}
 
 	/**
-	 * Registers a component by its base
+	 * Registers a component by its base constructor/configuration
 	 *
 	 * @param {String} name The name of the component
 	 * @param {Function/Object} base The constructor or base of the component
@@ -119,7 +128,7 @@ export default class ComponentContext {
 	 * @return {Component} The registered component
 	 */
 	registerComponentByBase(name, base, componentConfig) {
-		var cfg = CommonUtils.defaults({ name, base }, componentConfig);
+		var cfg = _.defaults({ name, base }, componentConfig);
 
 		return this.registerComponentConfiguration(cfg);
 	}
@@ -128,19 +137,38 @@ export default class ComponentContext {
 	 * Destroys this component context
 	 */
 	destroy() {
-		this.parentContext = null;
 		this.factory.destroy();
+
+		this.parentContext = null;
+		this.factory = null;
 	}
 
 	//////////////////////////////////////////////////
 	/// Begin private methods
 	//////////////////////////////////////////////////
 
+	/**
+	 * @private
+	 * Initializes the components configured for this context
+	 */
+	initComponents() {
+		var cmps = this.componentConfig;
+
+		_.each(cmps, cmp => this.registerComponentConfiguration(cmp));
+
+		this.factory.initComponents();
+	}
+
+	/**
+	 * @private
+	 * Initializes default components used in a context
+	 */
 	initDefaultComponents() {
 		var { factory } = this;
 
+		// register the standard "require" resolver
 		if (!this.hasComponent('RequireResolver')) {
-			this.registerComponentByBase('RequireResolver', ComponentRequirePathResolver, { attrs: [{ type: 'componentResolver' }] });
+			this.registerComponentByBase('RequireResolver', ComponentRequirePathResolver, { attrs: [ComponentAttributes.COMPONENT_RESOLVER] });
 		}
 	}
 

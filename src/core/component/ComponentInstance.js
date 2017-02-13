@@ -1,4 +1,4 @@
-import { CommonUtils } from '@/util';
+import { CommonUtils } from '@/core/util';
 
 import Component from './Component';
 

@@ -1,4 +1,6 @@
-import { CommonUtils } from '@/util';
+import _ from 'lodash';
+
+import { CommonUtils } from '@/core/util';
 
 /**
  * Class which contains items as named singletons
@@ -9,7 +11,7 @@ export default class SingletonScope {
      * Default constructor
      */
     constructor() {
-        CommonUtils.extend(this, {
+        _.extend(this, {
             /**
              * @cfg {Function} onDelete
              *
@@ -47,7 +49,7 @@ export default class SingletonScope {
      * Destroys this scope and all components registered within it
      */
     destroy() {
-        CommonUtils.each(this.instances, inst => inst.destroy());
+        _.each(this.instances, inst => inst.destroy());
 
         CommonUtils.callback('onDelete', this);
     }

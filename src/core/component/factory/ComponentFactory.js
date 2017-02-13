@@ -1,5 +1,7 @@
 import _ from 'lodash';
+
 import Component from '../Component';
+import ComponentAttributes from '../ComponentAttributes';
 import ComponentInstance from '../ComponentInstance';
 
 import ComponentManager from './ComponentManager';
@@ -7,20 +9,17 @@ import ComponentManager from './ComponentManager';
 import SingletonScope from './SingletonScope';
 import PrototypeScope from './PrototypeScope';
 
-import { CommonUtils } from '@/util';
+import { CommonUtils } from '@/core/util';
 
 const DEFAULT_FACTORY_METHOD = 'getComponent';
+const DEFAULT_PRIORITY = 10000;
 
-
-const ATTR_POST_PROCESSOR = 'componentPostProcessor';
-const ATTR_COMPONENT_RESOLVER = 'componentResolver';
-
-const INIT_PRIORITY = {
-    [ATTR_COMPONENT_RESOLVER]: 1000,
-    [ATTR_POST_PROCESSOR]: 5000
+const DEFAULT_INIT_ATTR_PRIORITY = {
+    [ComponentAttributes.COMPONENT_RESOLVER]: 1000,
+    [ComponentAttributes.COMPONENT_POST_PROCESSOR]: 5000,
+    [ComponentAttributes.COMPONENT_FACTORY_AWARE]: DEFAULT_PRIORITY - 1
 };
 
-const DEFAULT_PRIORITY = 10000;
 
 /**
  * Primary class for registering components and wiring them together based on their noted
@@ -32,7 +31,7 @@ export default class ComponentFactory {
      * Constructor
      */
     constructor(cfg) {
-        CommonUtils.extend(this, {
+        _.extend(this, {
 
             /**
              * @property {ComponentManager} componentManager
@@ -83,6 +82,7 @@ export default class ComponentFactory {
              * A name of components which act as component resolvers
              */
             dependencyResolvers: []
+
         }, cfg);
 
         this.init();
@@ -103,13 +103,23 @@ export default class ComponentFactory {
         return this.doGetComponent(nameOrAlias);
     }
 
-
+    /**
+     * Returns whether or not this component factory contains a component by name or alias.
+     * This can also check a parent factory if one is defined
+     *
+     * @param {String} nameOrAlias The name or alias of the component
+     * @param {Boolean} [checkParent=true] Check the parent factory to see if it contains the component
+     * if this one does not
+     * @return {Boolean}
+     */
     hasComponent(nameOrAlias, checkParent = true) {
         var hasCmp = this.componentManager.hasComponent(nameOrAlias);
 
         if (!hasCmp && checkParent === true && this.parentFactory) {
-
+            return this.parentFactory.hasComponent(nameOrAlias, true);
         }
+
+        return hasCmp;
     }
 
     /**
@@ -202,7 +212,7 @@ export default class ComponentFactory {
         this.parentFactory = null;
 
         // destroy all registered scope
-        CommonUtils.each(this.scopes, s => s.destroy());
+        _.each(this.scopes, s => s.destroy());
 
         this.scopes = null;
     }
@@ -294,8 +304,9 @@ export default class ComponentFactory {
         inst = this.executePostInitProcessors(inst, component);
 
         // process all attributes of this component
-        CommonUtils.each(component.attrs, attr => this.processComponentAttribute(component, attr));
+        _.each(component.attrs, attr => this.processComponentAttribute(component, inst, attr));
 
+        // wrap the instance with its configuration and return it
         return new ComponentInstance(inst, component);
     }
 
@@ -335,7 +346,7 @@ export default class ComponentFactory {
 
         // if the type is a regular object and not a function, return
         // the object itself.
-        if (CommonUtils.isObject(T) && !CommonUtils.isFunction(T)) {
+        if (_.isObject(T) && !_.isFunction(T)) {
             return T;
         }
 
@@ -353,12 +364,12 @@ export default class ComponentFactory {
     getComponentPriority(component) {
         var { priority, attrs } = component;
 
-        if (!CommonUtils.isUndefined(priority)) {
+        if (_.isFinite(priority)) {
             return priority;
         }
 
         // return the lowest priority for this component based on its attribute types
-        return _(attrs).map(attr => INIT_PRIORITY[attr.type] || DEFAULT_PRIORITY).concat(DEFAULT_PRIORITY).min();
+        return _(attrs).map(attr => DEFAULT_INIT_ATTR_PRIORITY[attr.type] || DEFAULT_PRIORITY).concat(DEFAULT_PRIORITY).min();
     }
 
     /**
@@ -369,7 +380,7 @@ export default class ComponentFactory {
      * @param {Component} component
      */
     executePreInitProcessors(inst, component) {
-        CommonUtils.each(this.componentPostProcessors, p => this.getComponent(p).preInitProcessor(inst, component));
+        _.each(this.componentPostProcessors, p => this.getComponent(p).preInitProcessor(inst, component));
     }
 
     /**
@@ -382,23 +393,26 @@ export default class ComponentFactory {
      * @return {Object} inst
      */
     executePostInitProcessors(inst, component) {
-        return CommonUtils.reduce(this.componentPostProcessors, (ret, p) => (this.getComponent(p).postInitProcessor(ret, component) || ret), inst);
+        return _.reduce(this.componentPostProcessors, (ret, p) => (this.getComponent(p).postInitProcessor(ret, component) || ret), inst);
     }
 
     /**
      * @private
      * Components an attribute for a specific component
      *
-     * @param {Component} component
+     * @param {Component} component The component configuration
+     * @param {Object} inst The component instance
      * @param {Object} attr The attribute for the component
      */
-    processComponentAttribute(component, attr) {
+    processComponentAttribute(component, inst, attr) {
         var { type } = attr;
 
-        if (type === ATTR_POST_PROCESSOR) {
+        if (type === ComponentAttributes.COMPONENT_POST_PROCESSOR) {
             this.componentPostProcessors.push(component.name);
-        } else if (type === ATTR_COMPONENT_RESOLVER) {
+        } else if (type === ComponentAttributes.COMPONENT_RESOLVER) {
             this.dependencyResolvers.push(component.name);
+        } else if (type === ComponentAttributes.COMPONENT_FACTORY_AWARE) {
+            inst.setComponentFactory(this);
         }
     }
 
@@ -413,7 +427,7 @@ export default class ComponentFactory {
         var { constructorArgs } = component;
 
         // map all constructor args to whatever they map to
-        return CommonUtils.map(constructorArgs, arg => this.getConstructorArg(arg, component));
+        return _.map(constructorArgs, arg => this.getConstructorArg(arg, component));
     }
 
     /**
@@ -429,7 +443,7 @@ export default class ComponentFactory {
 
         if (ref) {
             return this.getComponent(ref);
-        } if (CommonUtils.isDefined(value)) {
+        } if (_.isDefined(value)) {
             return value;
         }
     }
@@ -454,5 +468,4 @@ export default class ComponentFactory {
             return resolver.resolveComponent(component);
         }
     }
-
 }

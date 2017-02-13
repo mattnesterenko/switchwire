@@ -1,4 +1,6 @@
-import { CommonUtils } from '@/util';
+import _ from 'lodash';
+
+import { CommonUtils } from '@/core/util';
 
 /**
  * Scope which always creates a new instance of an object. Note, since there is no way
@@ -12,7 +14,7 @@ export default class PrototypeScope {
      * @param {Object} cfg
      */
     constructor(cfg) {
-        CommonUtils.extend(this, {
+        _.extend(this, {
 
             /**
              * @cfg {Function} onDelete

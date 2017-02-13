@@ -7,8 +7,7 @@
     "build": "babel src --out-file all.js",
     "watch": "babel -w src --out-dir es5",
     "bundle": "browserify es5/core/index.js -o es5/switchwire.js",
-    "watch_all": "babel -w src --out-file all.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nodemon es5/test/main.js"
   },
   "repository": {
     "type": "git",

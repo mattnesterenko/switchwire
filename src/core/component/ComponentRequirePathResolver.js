@@ -1,4 +1,4 @@
-import { CommonUtils } from '@/util';
+import _ from 'lodash';
 
 /**
  * This class is a very simple way to resolve a component base from a path using the require syntax. If any
@@ -25,7 +25,7 @@ export default class ComponentRequirePathResolver {
 		if (base.__esModule) {
 			if (base.default) {
 				base = base.default;
-			} else if (CommonUtils.has(base, component.name)) {
+			} else if (_.has(base, component.name)) {
 				base = base[component.name];
 			}
 		}

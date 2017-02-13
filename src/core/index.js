@@ -1,4 +1,4 @@
-export { Component, ComponentFactory } from './component';
+export { Component, ComponentFactory, ComponentAttributes } from './component';
 
 export { ComponentContext } from './context';
 

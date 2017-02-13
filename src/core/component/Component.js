@@ -1,4 +1,4 @@
-import { CommonUtils } from '@/util';
+import _ from 'lodash';
 
 /**
  * Class representing a component with various configurations. This class is here just provide
@@ -14,7 +14,7 @@ export default class Component {
      */
     constructor(cfg) {
 
-        CommonUtils.assignIn(this, {
+        _.assignIn(this, {
             /**
              * @cfg {String} name
              *
@@ -127,5 +127,64 @@ export default class Component {
             attrs: []
 
         }, cfg);
+
+        this.sanitize();
+
+    }
+
+    /**
+     * Tests if a component has a specific attribute
+     *
+     * @param {String} attributeType
+     * @return {Boolean}
+     */
+    hasAttr(type) {
+        return _.some(this.attrs, { type });
+    }
+
+    /**
+     * Returns an attribute by type for this component
+     *
+     * @param {String} type The type of attribute by name
+     * @param {String} [path] The path to retrieve within the attribute object definition
+     * @return {Object} The attribute definition, or the proeprty at `path`. This will return `undefined`
+     * if no attribute by the given type was found
+     */
+    getAttr(type, path) {
+        var attr = _.find(this.attrs, { type });
+
+        if (path) {
+            return _.get(attr, path);
+        }
+
+        return attr;
+    }
+
+
+    /////////////////////////////////////////////////////
+    /// Begin private methods
+    /////////////////////////////////////////////////////
+
+    /**
+     * @private
+     * Sanitizes the configuration for this component
+     */
+    sanitize() {
+        this.attrs = _.map(this.attrs, this.convertAttr);
+    }
+
+    /**
+     * @private
+     * Converts an attribute for this component from a string into a configuration object
+     *
+     * @param {Object/String} attr
+     * @return {Object}
+     */
+    convertAttr(attr) {
+        if (_.isString(attr)) {
+            return { type: attr };
+        }
+
+        return attr;
     }
 }

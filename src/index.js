@@ -1,1 +1,1 @@
-export { ComponentContext } from './core';
+export { ComponentContext, ComponentAttributes } from './core';

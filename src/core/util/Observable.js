@@ -1,4 +1,6 @@
-import { CommonUtils } from '@/util';
+import _ from 'lodash';
+
+import { CommonUtils } from '@/core/util';
 
 /**
  * Decorator mixin used for event handling
@@ -15,7 +17,7 @@ export default class Observable {
     static mixin(instance) {
         var o = new Observable();
 
-        if (CommonUtils.isFunction(instance.destroy)) {
+        if (_.isFunction(instance.destroy)) {
             // intercept the destroy method...
             instance.destroy = (...args) => (o.destroy.apply(instance), instance.destroy(args));
         } else {
@@ -23,7 +25,7 @@ export default class Observable {
         }
 
         // mixin the functionality now
-        CommonUtils.extend(instance, {
+        _.extend(instance, {
             events: {},
 
             fireEvent: o.fireEvent,
@@ -102,7 +104,7 @@ export default class Observable {
                 this.events[eventName] = null;
             }
         } else {
-            CommonUtils.each(this.events, event => event.destroy());
+            _.each(this.events, event => event.destroy());
             this.events = {};
         }
     }
@@ -122,7 +124,7 @@ export default class Observable {
  */
 class Event {
     constructor() {
-        CommonUtils.extend(this, {
+        _.extend(this, {
             listeners: []
         });
     }
@@ -143,7 +145,7 @@ class Event {
         me.listeners.push(listener);
 
         return function() {
-            CommonUtils.pull(me.listeners, listener);
+            _.pull(me.listeners, listener);
         };
     }
 
@@ -155,9 +157,9 @@ class Event {
      * @param {Object} options Options to inclue for the event
      */
     removeListener(eventHandler, thisArg, options) {
-        var matches = CommonUtils.filter(this.listeners, { eventHandler, thisArg, options });
+        var matches = _.filter(this.listeners, { eventHandler, thisArg, options });
 
-        CommonUtils.pullAll(this.listeners, matches);
+        _.pullAll(this.listeners, matches);
     }
 
     /**
@@ -191,7 +193,7 @@ class Event {
     fireListener(listener, args) {
         var { eventHandler, thisArg, options } = listener;
 
-        if (CommonUtils.isString(eventHandler)) {
+        if (_.isString(eventHandler)) {
             eventHandler = thisArg[eventHandler];
         }
 
